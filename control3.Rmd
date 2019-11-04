@@ -1,0 +1,286 @@
+---
+title: "CONTROL 3"
+author: Ana Laura García
+output: html_notebook
+---
+Parte 1:
+Estimadores insesgados de varianza mínima
+```{r c1, include=TRUE}
+##VARIABLES GLOBALES
+N <-3000;
+estErr01 <-c()
+estErr02 <-c()
+estErr03 <-c()
+valP1 <- c()
+valP2 <- c()
+valP3 <- c()
+n <- c(25,50,80);
+```
+
+
+```{r}
+#Parámetros lambda =1; teta =0.3770; po=0.3679
+lambda0 <- 1;
+po=0.3679
+teta = 0.3770
+for(m in 1:3){
+  
+  p01 <-c()
+  p02 <-c()
+  p03 <-c()
+  
+  
+  for(i in 1:N){
+    
+    dist <- rpois(n[m], lambda = lambda0)
+    mm<- sum(dist)/n[m]
+    p01[i] <- exp(-mm)
+    ber <- 0
+    
+    for(j in 1:n[m]){
+      
+      if(dist[j] == 0){
+        
+        ber <- ber+1;
+        
+      }
+      
+    }
+    
+    p02[i] <- ber/n[m]
+    p03[i] <- ((n[m]-1)/n[m])^ber
+    
+  }
+  valP1[m] <- mean(p01)
+  valP2[m] <- mean(p02)
+  valP3[m] <- mean(p03)
+  estErr01[m] <- sqrt(exp(n[m]*lambda0*(exp(-2/n[m])-1))-(teta^2))
+  estErr02[m] <- sqrt(exp(-lambda0)*(1-exp(-lambda0))/n[m])
+  estErr03[m]<-0
+  
+  
+}
+
+```
+
+
+```{r}
+#Parámetros lambda =0.5; teta =0.4140; po=0.6065
+lambda0 <- 0.5;
+po=0.6065
+teta = 0.4140
+for(m in 1:3){
+  
+  p01 <-c()
+  p02 <-c()
+  p03 <-c()
+  
+  
+  for(i in 1:N){
+    
+    dist <- rpois(n[m], lambda = lambda0)
+    mm<- sum(dist)/n[m]
+    p01[i] <- exp(-mm)
+    ber <- 0
+    
+    for(j in 1:n[m]){
+      
+      if(dist[j] == 0){
+        
+        ber <- ber+1;
+        
+      }
+      
+    }
+    
+    p02[i] <- ber/n[m]
+    p03[i] <- ((n[m]-1)/n[m])^ber
+    
+  }
+  valP1[m+3] <- mean(p01)
+  valP2[m+3] <- mean(p02)
+  valP3[m+3] <- mean(p03)
+  estErr01[m+3] <- sqrt(exp(n[m]*lambda0*(exp(-2/n[m])-1))-(teta^2))
+  estErr02[m+3] <- sqrt(exp(-lambda0)*(1-exp(-lambda0))/n[m])
+  estErr03[m+3]<-0
+  
+  
+}
+```
+
+
+```{r}
+#Parámetros lambda =2; teta =0.1422; po=0.1353
+lambda0 <- 2;
+po=0.1353
+teta = 0.1422
+for(m in 1:3){
+  
+  p01 <-c()
+  p02 <-c()
+  p03 <-c()
+  
+  
+  for(i in 1:N){
+    
+    dist <- rpois(n[m], lambda = lambda0)
+    mm<- sum(dist)/n[m]
+    p01[i] <- exp(-mm)
+    ber <- 0
+    
+    for(j in 1:n[m]){
+      
+      if(dist[j] == 0){
+        
+        ber <- ber+1;
+        
+      }
+      
+    }
+    
+    p02[i] <- ber/n[m]
+    p03[i] <- ((n[m]-1)/n[m])^ber
+    
+  }
+  valP1[m+6] <- mean(p01)
+  valP2[m+6] <- mean(p02)
+  valP3[m+6] <- mean(p03)
+  estErr01[m+6] <- sqrt(exp(n[m]*lambda0*(exp(-2/n[m])-1))-(teta^2))
+  estErr02[m+6] <- sqrt(exp(-lambda0)*(1-exp(-lambda0))/n[m])
+  estErr03[m+6]<-0
+  
+  
+}
+```
+
+
+```{r}
+#Generación de tabla con los datos extraídos de arriba
+l <-c(1,1,1,0.5,0.5,0.5, 2,2,2)
+tMuestra<-c(25,50,80,25,50,80,25,50,80)
+tabla<-cbind.data.frame('LAMBDA'=l,'n'=tMuestra, 'Estimador1'=valP1,'EE(1)'=estErr01,'Estimador2'=valP2,'EE(2)'=estErr02,'Estimador3'=valP3,'EE(3)'=estErr03)
+tabla
+```
+
+Parte 2: 
+
+Colas del mismo peso Distribución Normal
+```{r}
+
+alfas <- c(0.90, 0.95, 0.99)
+sigmas <- c(1,2,5)
+  Q1 <-c()
+  Q2<-c()
+  W<-c()
+for(j in 1:3){
+  for(i in 1:3){
+    q1 <- qnorm((1-alfas[i])/2, 0, sigmas[j])
+    q2 <- qnorm((1-alfas[i])/2, 0, sigmas[j], lower.tail = FALSE)
+    Q1 <- c(Q1, q1)
+    Q2 <- c(Q2, q2)
+    W <- c(W, q2-q1)
+  }
+}
+
+```
+Amplitud mínima Distribución Normal
+
+Como vimos en clase, la amplitud mínima se alcanza cuando la f.d.p f,  f(q1) = f(q2)
+La distribución normal resulta ser una función simétrica alrededor de 0 entonces
+para este caso veremos que la condición se cumple cuando q1 = -q2.
+```{r}
+Q11 <-c()
+Q22<-c()
+W_Min<-c()
+k <- 0.0001
+for(j in 1:3){
+  for(i in 1:3){
+    d1 <-(1-alfas[i])/2
+    d2<-(1-alfas[i])/2
+    flag = FALSE
+    while(!flag){
+      q1 <- qnorm(d1, 0, sigmas[j])
+      q2 <- qnorm(d2, 0, sigmas[j], lower.tail = FALSE)
+      
+      if(dnorm(q1, 0, sigmas[j])==dnorm(q2, 0, sigmas[j])){
+        Q11 <- c(Q11, q1)
+        Q22 <- c(Q22, q2)
+        W_Min <- c(W_Min, q2-q1)
+        flag = TRUE
+      }
+      else{
+        d1 <- d1-k
+        d2<- d2+k
+        
+      }
+    }
+  }
+}
+
+```
+
+Colas de mismo peso Distribución Ji-Cuadrada
+
+```{r}
+grados_n <- c(5,10,20)
+for(j in 1:3){
+  for(i in 1:3){
+    q1 <- qchisq((1-alfas[i])/2, df= grados_n[j] )
+    q2 <- qchisq((1-alfas[i])/2,df = grados_n[j], lower.tail = FALSE)
+    Q1 <- c(Q1, q1)
+    Q2 <- c(Q2, q2)
+    W <- c(W, q2-q1)
+  }
+}
+```
+Amplitud mínima Distribución Ji-Cuadrada
+
+En el siguiente algoritmo notamos como esta vez si entra al "else" de la condición, acortando d1 y alargando d2, minimizando el valor de q2-q1. Esto se debe a que la f.d.p no es simétrica. 
+```{r}
+for(j in 1:3){
+  for(i in 1:3){
+    d1 <-(1-alfas[i])/2
+    d2<-(1-alfas[i])/2
+    flag2 = FALSE
+    while(!flag2 ){
+      q1 <- qchisq(d1, df= grados_n[j] )
+      q2 <- qchisq(d2, df = grados_n[j], lower.tail = FALSE)
+      
+      if(dchisq(q1, df= grados_n[j])-dchisq(q2, df= grados_n[j])<0.0001){
+        Q11 <- c(Q11, q1)
+        Q22 <- c(Q22, q2)
+        W_Min <- c(W_Min, q2-q1)
+        flag2 = TRUE
+      }
+      else{
+        d1 <- d1-k
+        d2<- d2+k
+      }
+    }
+  }
+}
+```
+
+Tabla de colas con mismo peso
+
+```{r}
+nom_dist <- c('Normal','Normal','Normal','Normal','Normal','Normal','Normal','Normal','Normal','Ji-Cuadrada','Ji-Cuadrada','Ji-Cuadrada','Ji-Cuadrada','Ji-Cuadrada','Ji-Cuadrada','Ji-Cuadrada','Ji-Cuadrada','Ji-Cuadrada' )
+param<- c(1,1,1,2,2,2,5,5,5,5,5,5,10,10,10,20,20,20)
+al <- c(0.90, 0.95,0.99,0.90, 0.95,0.99,0.90, 0.95,0.99,0.90, 0.95,0.99,0.90, 0.95,0.99,0.90, 0.95,0.99)
+tabla2 = cbind.data.frame('Distribución'=nom_dist,'Parámetro'= param,'Densidad intermedia'=al,'Límite inf.'=Q1, 'Límite sup.'=Q2, 'Amplitud mismo peso'=W)
+
+tabla2
+```
+
+Tabla de amplitud mínima
+
+```{r}
+tabla3 = cbind.data.frame('Distribución'=nom_dist,'Parámetro'= param,'Densidad intermedia'=al,'Límite inf.'=Q11, 'Límite sup.'=Q22, 'Amplitud mínima'=W_Min)
+tabla3
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
